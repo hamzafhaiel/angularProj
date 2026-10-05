@@ -1,0 +1,9 @@
+<section class="welcome" id="top">
+ <p class="eyebrow">RENCONTRES · IDÉES · INSPIRATION</p>
+ <h1>Des idées qui <span>rassemblent.</span></h1>
+ <p class="intro">Découvrez les conférences à venir et trouvez votre prochaine source d’inspiration.</p>
+</section>
+<div class="conference-layout" id="conferences">
+ <app-conference-list (conferenceSelected)="selectConference($event)" />
+ <app-conference-details [conference]="selectedConference()" />
+</div>

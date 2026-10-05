@@ -1,0 +1,6 @@
+.site-footer { display:flex; align-items:center; gap:1rem; width:min(1120px,calc(100% - 2rem)); margin:auto; padding:1.5rem 0; border-top:1px solid #e9e7e0; color:#7e8580; font-size:.75rem; }
+.footer-brand { color:#283b35; font:700 1.1rem Georgia,serif; text-decoration:none; }
+.footer-brand span { color:#b87850; }
+.site-footer p { margin:0; }
+.copyright { margin-left:auto; }
+@media(max-width:560px) { .site-footer { flex-wrap:wrap; } .copyright { width:100%; margin-left:0; } }

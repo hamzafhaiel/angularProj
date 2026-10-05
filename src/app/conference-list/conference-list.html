@@ -1,0 +1,16 @@
+<section class="list-panel" aria-labelledby="upcoming-title">
+ <div class="section-heading"><div><p class="eyebrow">À VOTRE AGENDA</p><h2 id="upcoming-title">À venir</h2></div><span class="count">{{ upcomingConferences.length }} événements</span></div>
+ @if (upcomingConferences.length > 0) {
+  <div class="conference-list">
+   @for (conference of upcomingConferences; track conference.id) {
+    <button class="conference-card" type="button" (click)="select(conference)">
+     <span class="date-tile"><span>{{ conference.date | date:'MMM' | uppercase }}</span><strong>{{ conference.date | date:'dd' }}</strong></span>
+     <span class="card-copy"><span class="category">{{ conference.category }}</span><strong class="title">{{ conference.title }}</strong><span class="meta">{{ conference.date | date:'EEE d MMM · HH:mm' }} · {{ conference.place }}</span></span>
+     <span class="seat-status" [class.few-seats]="seatsLeft(conference) > 0 && seatsLeft(conference) < 10" [class.sold-out]="seatsLeft(conference) === 0">
+      @if (seatsLeft(conference) === 0) { Complet } @else { {{ seatsLeft(conference) }} places }
+     </span>
+    </button>
+   }
+  </div>
+ } @else { <p class="empty-state">Aucune conférence à venir pour le moment. Revenez bientôt !</p> }
+</section>

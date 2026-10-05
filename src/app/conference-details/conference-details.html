@@ -1,0 +1,16 @@
+<aside class="detail-panel">
+ <p class="eyebrow">VOTRE PROCHAINE DÉCOUVERTE</p>
+ @if (conference(); as selected) {
+  <span class="category">{{ selected.category }}</span><h2>{{ selected.title }}</h2><p class="description">{{ selected.description }}</p>
+  <div class="detail-list">
+   <div class="detail-row"><span class="detail-icon">◷</span><span><small>DATE & HEURE</small><strong>{{ selected.date | date:'EEEE d MMMM · HH:mm' }}</strong></span></div>
+   <div class="detail-row"><span class="detail-icon">⌖</span><span><small>LIEU</small><strong>{{ selected.place }}</strong></span></div>
+   <div class="detail-row"><span class="detail-icon">✳</span><span><small>INTERVENANT·E</small><strong>{{ selected.speaker }}</strong></span></div>
+   <div class="detail-row"><span class="detail-icon">♧</span><span><small>PLACES DISPONIBLES</small><strong>{{ selected.maxParticipants - selected.nbParticipants }} / {{ selected.maxParticipants }}</strong></span></div>
+  </div>
+  @if (isRegistered()) { <p class="confirmation" role="status">Vous êtes inscrit·e. À très bientôt !</p> }
+  @else if (selected.nbParticipants < selected.maxParticipants) { <button class="register-button" type="button" (click)="register()">Réserver ma place <span>→</span></button> }
+  @else { <button class="register-button disabled" type="button" disabled>Conférence complète</button> }
+ } @else { <div class="placeholder"><span class="sparkle">✳</span><h2>À vous de choisir</h2><p>Sélectionnez une conférence pour découvrir tous les détails et réserver votre place.</p></div> }
+</aside>
+
