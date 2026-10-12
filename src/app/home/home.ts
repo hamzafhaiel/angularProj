@@ -1,8 +1,33 @@
 import { Component, signal } from '@angular/core';
-import { ConferenceList, type Conference } from '../conference-list/conference-list';
-import { ConferenceDetails } from '../conference-details/conference-details';
-@Component({ selector:'app-home', imports:[ConferenceList,ConferenceDetails], templateUrl:'./home.html', styleUrl:'./home.css' })
+import { FormsModule } from '@angular/forms';
+
+@Component({
+  selector: 'app-home',
+  imports: [FormsModule],
+  templateUrl: './home.html',
+  styleUrl: './home.css',
+})
 export class Home {
- protected readonly selectedConference = signal<Conference | null>(null);
- protected selectConference(conference:Conference):void { this.selectedConference.set(conference); }
+  username="mohamed";
+
+  onsave(){alert("saved");}
+  imgurl="https://www.neosoft.fr/wp-content/uploads/2023/02/angular.png"
+  nom="ahmed";
+
+  count=signal(0);
+  countS=0
+  //simple
+inc(){
+  this.countS++;
+}
+///signal
+  increment(){
+    this.count.update((c)=>c+1);
+
+  }
+  students=["ahmed","mohamed","ali","sami"];
+  students2=[{name:"ahmed",age:20},
+              {name:"mohamed",age:30},
+              {name:"ali",age:40},
+               {name:"sami",age:50}];
 }

@@ -1,9 +1,26 @@
-<section class="welcome" id="top">
- <p class="eyebrow">RENCONTRES · IDÉES · INSPIRATION</p>
- <h1>Des idées qui <span>rassemblent.</span></h1>
- <p class="intro">Découvrez les conférences à venir et trouvez votre prochaine source d’inspiration.</p>
-</section>
-<div class="conference-layout" id="conferences">
- <app-conference-list (conferenceSelected)="selectConference($event)" />
- <app-conference-details [conference]="selectedConference()" />
-</div>
+<p>welcome 4ssa5</p>
+
+<h1>interpolation {{username}}</h1>
+<button (click)="onsave()">Eventbinding</button>
+<img [src]="imgurl" style="width: 100px; height: 100px;" />
+
+<input type="text" [(ngModel)]="nom" /> {{nom}}
+
+<h2>signal : {{count()}}</h2>
+<button (click)="increment()">increment</button>
+<button (click)="inc()">inc simple</button>
+<h2> {{countS}} </h2>
+@if(nom == "4ssa5"){
+    <p>4ssa5 est egal a 4ssa5</p>
+}
+@else{
+    <p>4ssa5 n'est pas egal a 4ssa5</p>
+}
+<h2>students (simple)</h2>
+@for( item of students;track $index){
+    <p> {{item}} </p>
+}
+<h2>students (objet)</h2>
+@for( item of students2;track $index){
+    <p> {{item.name}} - {{item.age}} </p>
+}

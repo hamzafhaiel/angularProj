@@ -1,9 +1,13 @@
-import { Component, input, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
-import type { Conference } from '../conference-list/conference-list';
-@Component({ selector:'app-conference-details', imports:[DatePipe], templateUrl:'./conference-details.html', styleUrl:'./conference-details.css' })
+import { Component, input, output } from '@angular/core';
+import { Conference } from '../conference';
+
+@Component({
+  selector: 'app-conference-details',
+  imports: [],
+  templateUrl: './conference-details.html',
+  styleUrl: './conference-details.css',
+})
 export class ConferenceDetails {
- readonly conference = input<Conference | null>(null);
- protected readonly isRegistered = signal(false);
- protected register():void { this.isRegistered.set(true); }
+  readonly conf = input<Conference | null>(null);
+  readonly closed = output<void>();
 }
