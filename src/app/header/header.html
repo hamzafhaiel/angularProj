@@ -1,2 +1,11 @@
-<a routerLink="/home">Home</a>
-<a routerLink="/list">List Conferences</a>
+<nav aria-label="Main navigation">
+  <a routerLink="/home" routerLinkActive="active" ariaCurrentWhenActive="page"
+    [routerLinkActiveOptions]="{ exact: true }">Home</a>
+  <a routerLink="/list" routerLinkActive="active" ariaCurrentWhenActive="page">List Conferences</a>
+  <a routerLink="/registration" routerLinkActive="active" ariaCurrentWhenActive="page"
+    [routerLinkActiveOptions]="{ exact: true }">Registration</a>
+  <a routerLink="/contact" routerLinkActive="active" ariaCurrentWhenActive="page"
+    [routerLinkActiveOptions]="{ exact: true }">Contact</a>
+  <a routerLink="/profile" routerLinkActive="active" ariaCurrentWhenActive="page"
+    [routerLinkActiveOptions]="{ exact: true }">User profile</a>
+</nav>

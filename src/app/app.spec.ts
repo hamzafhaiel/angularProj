@@ -103,4 +103,47 @@ describe('App', () => {
     expect(page.querySelector('h1')?.textContent).toBe('Conference not found');
     expect(page.querySelector('app-conference-page a')?.getAttribute('href')).toBe('/list');
   });
+
+  it.each([
+    ['/home', 'app-home', '/home'],
+    ['/list', 'app-conference-list', '/list'],
+    ['/list/1', 'app-conference-page', '/list'],
+    ['/registration', 'app-registration', '/registration'],
+    ['/contact', 'app-contact', '/contact'],
+    ['/profile', 'app-profile', '/profile'],
+  ])('opens %s directly with one page and the correct active navigation link', async (url, selector, activeUrl) => {
+    const page = await renderRoute(url);
+    const routedPages = page.querySelectorAll(
+      'router-outlet ~ app-home, router-outlet ~ app-conference-list, ' +
+      'router-outlet ~ app-conference-page, router-outlet ~ app-registration, ' +
+      'router-outlet ~ app-contact, router-outlet ~ app-profile',
+    );
+    expect(routedPages.length).toBe(1);
+    expect(routedPages[0].matches(selector)).toBe(true);
+    const activeLinks = page.querySelectorAll('nav a.active');
+    expect(activeLinks.length).toBe(1);
+    expect(activeLinks[0].getAttribute('href')).toBe(activeUrl);
+    expect(activeLinks[0].getAttribute('aria-current')).toBe('page');
+  });
+
+  it('navigates through the menu and updates the active link without replacing the app shell', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/home');
+    await fixture.whenStable();
+    const page = fixture.nativeElement as HTMLElement;
+    const header = page.querySelector('app-header');
+
+    for (const url of ['/registration', '/contact', '/profile', '/list', '/home']) {
+      const completed = firstValueFrom(router.events.pipe(filter(event => event instanceof NavigationEnd)));
+      page.querySelector<HTMLAnchorElement>(`nav a[href="${url}"]`)!.click();
+      await completed;
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(router.url).toBe(url);
+      expect(page.querySelector('nav a.active')?.getAttribute('href')).toBe(url);
+      expect(page.querySelector('app-header')).toBe(header);
+    }
+  });
 });
