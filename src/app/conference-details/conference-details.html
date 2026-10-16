@@ -3,6 +3,7 @@
     <h2 id="details-title">{{ conference.name }} — Conference details</h2>
     <p><strong>Date:</strong> {{ conference.date }}</p>
     <p><strong>Place:</strong> {{ conference.place }}</p>
+    <p><a [routerLink]="['/registration', conference.id]">Register for this conference</a></p>
     <button type="button" (click)="closed.emit()">Close details</button>
   </section>
 }

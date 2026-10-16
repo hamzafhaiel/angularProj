@@ -109,6 +109,8 @@ describe('App', () => {
     ['/list', 'app-conference-list', '/list'],
     ['/list/1', 'app-conference-page', '/list'],
     ['/registration', 'app-registration', '/registration'],
+    ['/registration/1', 'app-registration', '/registration'],
+    ['/registration/1/confirmation', 'app-registration-confirmation', '/registration'],
     ['/contact', 'app-contact', '/contact'],
     ['/profile', 'app-profile', '/profile'],
   ])('opens %s directly with one page and the correct active navigation link', async (url, selector, activeUrl) => {
@@ -116,7 +118,8 @@ describe('App', () => {
     const routedPages = page.querySelectorAll(
       'router-outlet ~ app-home, router-outlet ~ app-conference-list, ' +
       'router-outlet ~ app-conference-page, router-outlet ~ app-registration, ' +
-      'router-outlet ~ app-contact, router-outlet ~ app-profile',
+      'router-outlet ~ app-contact, router-outlet ~ app-profile, ' +
+      'router-outlet ~ app-registration-confirmation',
     );
     expect(routedPages.length).toBe(1);
     expect(routedPages[0].matches(selector)).toBe(true);

@@ -6,12 +6,15 @@ import { ConferencePage } from './conference-page/conference-page';
 import { Registration } from './registration/registration';
 import { Contact } from './contact/contact';
 import { Profile } from './profile/profile';
+import { RegistrationConfirmation } from './registration/registration-confirmation';
 
 export const routes: Routes = [
     {path:'home',component:Home},
     {path:'list',component:ConferenceList},
     {path:'list/:id',component:ConferencePage},
     {path:'registration',component:Registration},
+    {path:'registration/:id/confirmation',component:RegistrationConfirmation},
+    {path:'registration/:id',component:Registration},
     {path:'contact',component:Contact},
     {path:'profile',component:Profile},
     {path:'',redirectTo:'home',pathMatch:'full'},
