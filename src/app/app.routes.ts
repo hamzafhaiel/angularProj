@@ -1,23 +1,29 @@
-import { Routes } from '@angular/router';
-import { Home } from './home/home';
-import { ConferenceList } from './conference-list/conference-list';
-import { Notfound } from './notfound/notfound';
-import { ConferencePage } from './conference-page/conference-page';
-import { Registration } from './registration/registration';
-import { Contact } from './contact/contact';
-import { Profile } from './profile/profile';
-import { RegistrationConfirmation } from './registration/registration-confirmation';
+import type { Routes } from '@angular/router';
 
 export const routes: Routes = [
-    {path:'home',component:Home},
-    {path:'list',component:ConferenceList},
-    {path:'list/:id',component:ConferencePage},
-    {path:'registration',component:Registration},
-    {path:'registration/:id/confirmation',component:RegistrationConfirmation},
-    {path:'registration/:id',component:Registration},
-    {path:'contact',component:Contact},
-    {path:'profile',component:Profile},
-    {path:'',redirectTo:'home',pathMatch:'full'},
-    {path:'**',component:Notfound},
-
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  {
+    path: 'home',
+    loadComponent: () => import('./home/home').then(module => module.Home),
+  },
+  {
+    path: 'list',
+    loadChildren: () => import('./conference-list/conference.routes').then(module => module.CONFERENCE_ROUTES),
+  },
+  {
+    path: 'registration',
+    loadChildren: () => import('./registration/registration.routes').then(module => module.REGISTRATION_ROUTES),
+  },
+  {
+    path: 'contact',
+    loadComponent: () => import('./contact/contact').then(module => module.Contact),
+  },
+  {
+    path: 'profile',
+    loadComponent: () => import('./profile/profile').then(module => module.Profile),
+  },
+  {
+    path: '**',
+    loadComponent: () => import('./notfound/notfound').then(module => module.Notfound),
+  },
 ];

@@ -5,7 +5,7 @@ import { routes } from './app.routes';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Location } from '@angular/common';
 import { provideLocationMocks } from '@angular/common/testing';
-import { NavigationEnd } from '@angular/router';
+import { NavigationEnd, RouteConfigLoadStart } from '@angular/router';
 import { filter, firstValueFrom } from 'rxjs';
 
 describe('App', () => {
@@ -148,5 +148,41 @@ describe('App', () => {
       expect(page.querySelector('nav a.active')?.getAttribute('href')).toBe(url);
       expect(page.querySelector('app-header')).toBe(header);
     }
+  });
+
+  it('loads feature routes only when visited and reuses them on a later visit', async () => {
+    const router = TestBed.inject(Router);
+    const loadedPaths: (string | undefined)[] = [];
+    const subscription = router.events.subscribe(event => {
+      if (event instanceof RouteConfigLoadStart) loadedPaths.push(event.route.path);
+    });
+    try {
+      const harness = await RouterTestingHarness.create('/home');
+      expect(loadedPaths).toContain('home');
+      expect(loadedPaths).not.toContain('list');
+      expect(loadedPaths).not.toContain('registration');
+      expect(loadedPaths).not.toContain('profile');
+
+      await harness.navigateByUrl('/registration/2');
+      expect(loadedPaths).toContain('registration');
+      expect(loadedPaths).not.toContain('list');
+      expect(harness.routeNativeElement?.querySelector('h2')?.textContent).toBe('react');
+
+      await harness.navigateByUrl('/list');
+      expect(loadedPaths).toContain('list');
+      const loadCount = loadedPaths.length;
+      await harness.navigateByUrl('/registration/3');
+      expect(loadedPaths.length).toBe(loadCount);
+      expect(harness.routeNativeElement?.querySelector('h2')?.textContent).toBe('vue');
+    } finally {
+      subscription.unsubscribe();
+    }
+  });
+
+  it.each(['/list/1/unknown', '/registration/1/unknown'])('uses the global fallback for unknown nested URL %s', async url => {
+    const page = await renderRoute(url);
+    expect(page.querySelector('app-notfound')).toBeTruthy();
+    expect(page.querySelector('app-registration')).toBeNull();
+    expect(page.querySelector('app-conference-page')).toBeNull();
   });
 });
