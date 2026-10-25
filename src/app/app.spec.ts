@@ -108,6 +108,8 @@ describe('App', () => {
     ['/home', 'app-home', '/home'],
     ['/list', 'app-conference-list', '/list'],
     ['/list/1', 'app-conference-page', '/list'],
+    ['/list/new', 'app-conference-editor', '/list'],
+    ['/list/1/edit', 'app-conference-editor', '/list'],
     ['/registration', 'app-registration', '/registration'],
     ['/registration/1', 'app-registration', '/registration'],
     ['/registration/1/confirmation', 'app-registration-confirmation', '/registration'],
@@ -119,7 +121,7 @@ describe('App', () => {
       'router-outlet ~ app-home, router-outlet ~ app-conference-list, ' +
       'router-outlet ~ app-conference-page, router-outlet ~ app-registration, ' +
       'router-outlet ~ app-contact, router-outlet ~ app-profile, ' +
-      'router-outlet ~ app-registration-confirmation',
+      'router-outlet ~ app-registration-confirmation, router-outlet ~ app-conference-editor',
     );
     expect(routedPages.length).toBe(1);
     expect(routedPages[0].matches(selector)).toBe(true);

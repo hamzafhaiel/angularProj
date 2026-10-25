@@ -1,8 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
-import { CONFERENCES } from '../conferences';
+import { ConferenceStore } from '../conference-store';
 import { RegistrationStore } from './registration-store';
 
 @Component({
@@ -13,7 +13,7 @@ import { RegistrationStore } from './registration-store';
       <h1 id="registration-title">Registration</h1>
       @if (selection(); as selected) {
         @if (selected.conference; as conference) {
-          <h2>{{ conference.name }}</h2>
+          <h2>{{ conference.title }}</h2>
           <p>{{ conference.date }} · {{ conference.place }}</p>
           <p>Registration is saved in this browser session.</p>
           <button type="button" (click)="register()">
@@ -27,8 +27,8 @@ import { RegistrationStore } from './registration-store';
         @if (!selected.conference) {
           <p>Choose a conference to register:</p>
           <ul>
-            @for (conference of conferences; track conference.id) {
-              <li><a [routerLink]="['/registration', conference.id]">{{ conference.name }}</a></li>
+            @for (conference of conferences(); track conference.id) {
+              <li><a [routerLink]="['/registration', conference.id]">{{ conference.title }}</a></li>
             }
           </ul>
         }
@@ -40,14 +40,11 @@ import { RegistrationStore } from './registration-store';
 export class Registration {
   private readonly router = inject(Router);
   protected readonly registrations = inject(RegistrationStore);
-  protected readonly conferences = CONFERENCES;
+  private readonly store = inject(ConferenceStore);
+  protected readonly conferences = this.store.conferences;
   protected readonly error = signal('');
-  protected readonly selection = toSignal(inject(ActivatedRoute).paramMap.pipe(
-    map(params => ({
-      id: params.get('id'),
-      conference: CONFERENCES.find(conference => String(conference.id) === params.get('id')),
-    })),
-  ));
+  private readonly id = toSignal(inject(ActivatedRoute).paramMap.pipe(map(params => params.get('id'))), { initialValue: null });
+  protected readonly selection = computed(() => ({ id: this.id(), conference: this.store.find(this.id()) }));
 
   protected async register(): Promise<void> {
     this.error.set('');

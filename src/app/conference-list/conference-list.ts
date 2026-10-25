@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CONFERENCES } from '../conferences';
+import { ConferenceStore } from '../conference-store';
 
 @Component({
   selector: 'app-conference-list',
@@ -9,5 +9,5 @@ import { CONFERENCES } from '../conferences';
   styleUrl: './conference-list.css',
 })
 export class ConferenceList {
-  readonly conferences = CONFERENCES;
+  readonly conferences = inject(ConferenceStore).conferences;
 }

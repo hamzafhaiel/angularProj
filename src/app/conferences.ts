@@ -1,7 +1,7 @@
 import { Conference } from './conference';
 
 export const CONFERENCES: readonly Conference[] = [
-  { id: 1, name: 'angular', date: '2023-01-01', place: 'tunis' },
-  { id: 2, name: 'react', date: '2023-02-01', place: 'sfax' },
-  { id: 3, name: 'vue', date: '2023-03-01', place: 'sousse' },
+  { id: 1, title: 'angular', description: 'Discover Angular components and reactive forms.', category: 'Web development', date: '2023-01-01', place: 'tunis', maxParticipants: 100, nbParticipants: 0 },
+  { id: 2, title: 'react', description: 'Explore React components and state management.', category: 'Web development', date: '2023-02-01', place: 'sfax', maxParticipants: 80, nbParticipants: 0 },
+  { id: 3, title: 'vue', description: 'Learn Vue components and reactive application design.', category: 'Web development', date: '2023-03-01', place: 'sousse', maxParticipants: 60, nbParticipants: 0 },
 ];

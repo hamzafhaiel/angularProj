@@ -1,7 +1,8 @@
 <h1>Conferences</h1>
+<p style="text-align: center;"><a routerLink="/list/new">Add conference</a></p>
 
 <div class="cards-container">
-  @for (conf of conferences; track conf.id) {
+  @for (conf of conferences(); track conf.id) {
     <div class="card">
 
       <img
@@ -10,12 +11,12 @@
       />
 
       <div class="card-content">
-        <h2>{{ conf.name }}</h2>
+        <h2>{{ conf.title }}</h2>
 
         <p>📅 {{ conf.date }}</p>
         <p>📍 {{ conf.place }}</p>
         <a class="details-link" [routerLink]="['/list', conf.id]"
-          [attr.aria-label]="'View details for ' + conf.name"
+          [attr.aria-label]="'View details for ' + conf.title"
           >View details</a>
 
       </div>

@@ -27,7 +27,7 @@ describe('ConferenceList', () => {
     const buttons = page.querySelectorAll<HTMLAnchorElement>('.card .details-link');
     expect(buttons.length).toBe(3);
 
-    component.conferences.forEach((conference, index) => {
+    component.conferences().forEach((conference, index) => {
       expect(buttons[index].textContent?.trim()).toBe('View details');
       expect(buttons[index].getAttribute('href')).toBe('/list/' + conference.id);
     });

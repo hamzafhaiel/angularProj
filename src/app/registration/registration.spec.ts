@@ -36,7 +36,7 @@ describe('Dynamic registration navigation', () => {
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe('Registration confirmed');
     expect(harness.routeNativeElement?.textContent).toContain('react');
     expect(harness.routeNativeElement?.textContent).toContain('sfax');
-    expect(new RegistrationStore().isRegistered(2)).toBe(true);
+    expect(TestBed.runInInjectionContext(() => new RegistrationStore()).isRegistered(2)).toBe(true);
   });
 
   it('reacts to a different id while reusing the registration page', async () => {
@@ -92,7 +92,7 @@ describe('Dynamic registration navigation', () => {
 
   it('ignores malformed stored data and prevents duplicate or invalid registrations', () => {
     sessionStorage.setItem(STORAGE_KEY, '{broken');
-    const store = new RegistrationStore();
+    const store = TestBed.runInInjectionContext(() => new RegistrationStore());
     expect(store.isRegistered(1)).toBe(false);
     expect(store.register(999)).toBe(false);
     expect(store.register(1)).toBe(true);

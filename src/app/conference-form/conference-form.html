@@ -1,0 +1,66 @@
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  @for (field of textFields; track field.key) {
+    <div class="field">
+      <label [for]="field.key">{{ field.label }}</label>
+      @if (field.key === 'description') {
+        <textarea [id]="field.key" [formControlName]="field.key" rows="5" required
+          [attr.aria-describedby]="field.key + '-error'" [attr.aria-invalid]="form.controls[field.key].invalid && form.controls[field.key].touched"></textarea>
+      } @else {
+        <input [id]="field.key" [formControlName]="field.key" type="text" required
+          [attr.aria-describedby]="field.key + '-error'" [attr.aria-invalid]="form.controls[field.key].invalid && form.controls[field.key].touched" />
+      }
+      @if (field.key === 'title') { <small id="title-count">{{ titleLength() }} / 100 characters</small> }
+      @if (field.key === 'description') { <small id="description-count">{{ descriptionLength() }} / 2000 characters</small> }
+      <div [id]="field.key + '-error'" class="error">
+        @if (form.controls[field.key].touched || submitted()) {
+          @if (form.controls[field.key].hasError('required')) { <p>{{ field.label }} is required; spaces alone are not valid.</p> }
+          @else if (form.controls[field.key].hasError('minlength')) { <p>{{ field.label }} needs at least {{ field.min }} characters after trimming.</p> }
+          @else if (form.controls[field.key].hasError('maxlength')) { <p>{{ field.label }} must not exceed {{ field.max }} characters.</p> }
+        }
+      </div>
+    </div>
+  }
+  <div class="field">
+    <label for="date">Date</label>
+    <input id="date" type="date" formControlName="date" required aria-describedby="date-help date-error"
+      [attr.aria-invalid]="form.controls.date.invalid && form.controls.date.touched" />
+    <small id="date-help">Choose today or a future date. An existing conference can keep its original date.</small>
+    <div id="date-error" class="error">
+      @if (form.controls.date.touched || submitted()) {
+        @if (form.controls.date.hasError('required')) { <p>Date is required.</p> }
+        @else if (form.controls.date.hasError('date')) { <p>Enter a valid calendar date.</p> }
+        @else if (form.controls.date.hasError('pastDate')) { <p>Choose today or a future date.</p> }
+      }
+    </div>
+  </div>
+  <div class="field">
+    <label for="maximum">Maximum participants</label>
+    <input id="maximum" type="number" formControlName="maxParticipants" min="1" max="100000" step="1" required aria-describedby="maximum-error" />
+    <div id="maximum-error" class="error">
+      @if (form.controls.maxParticipants.touched || submitted()) {
+        @if (form.controls.maxParticipants.hasError('required')) { <p>Maximum participants is required.</p> }
+        @else if (form.controls.maxParticipants.invalid) { <p>Enter a whole number from 1 to 100000.</p> }
+      }
+    </div>
+  </div>
+  <div class="field">
+    <label for="participants">Current participants</label>
+    <input id="participants" type="number" formControlName="nbParticipants" min="0" max="100000" step="1" required aria-describedby="participants-error capacity-error" />
+    <div id="participants-error" class="error">
+      @if (form.controls.nbParticipants.touched || submitted()) {
+        @if (form.controls.nbParticipants.hasError('required')) { <p>Current participants is required.</p> }
+        @else if (form.controls.nbParticipants.invalid) { <p>Enter a whole number from 0 to 100000.</p> }
+      }
+    </div>
+  </div>
+  <div id="capacity-error" class="error">
+    @if (form.hasError('participantLimit') && (form.controls.nbParticipants.touched || form.controls.maxParticipants.touched || submitted())) {
+      <p>Current participants must not exceed the maximum.</p>
+    }
+  </div>
+  <p id="form-status" role="status">Form status: {{ formStatus() }} · Available places: {{ availablePlaces() }}</p>
+  <div class="actions">
+    <button type="submit" [disabled]="!isValid() || saving()">{{ saving() ? 'Saving...' : conference() ? 'Save changes' : 'Save conference' }}</button>
+    <button type="button" class="secondary" [disabled]="saving()" (click)="reset()">Reset</button>
+  </div>
+</form>
