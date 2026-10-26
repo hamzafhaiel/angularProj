@@ -22,20 +22,20 @@ test('JSON Server persists GET, POST, PUT, PATCH and DELETE with numeric IDs', a
   });
   try {
     assert.equal((await (await request()).json()).length, 3);
-    assert.equal((await (await request(`${url}?place=tunis`)).json()).length, 1);
-    const draft = { title: 'API smoke test', description: 'Testing HTTP persistence.', category: 'Test', place: 'Tunis', date: '2099-01-01', maxParticipants: 20, nbParticipants: 0 };
+    assert.equal((await (await request(`${url}?place=Tunis`)).json()).length, 1);
+    const draft = { name: 'API smoke test', place: 'Tunis', date: '2099-01-01' };
     const post = await request(url, { method: 'POST', body: JSON.stringify(draft) });
     assert.equal(post.status, 201);
     const created = await post.json();
     assert.equal(typeof created.id, 'number');
     const resource = `${url}/${created.id}`;
-    assert.equal((await (await request(resource)).json()).title, draft.title);
-    const updated = { ...created, title: 'PUT updated' };
+    assert.equal((await (await request(resource)).json()).name, draft.name);
+    const updated = { ...created, name: 'PUT updated' };
     assert.equal((await request(resource, { method: 'PUT', body: JSON.stringify(updated) })).status, 200);
-    const patched = await (await request(resource, { method: 'PATCH', body: JSON.stringify({ maxParticipants: 30 }) })).json();
-    assert.equal(patched.title, 'PUT updated'); assert.equal(patched.maxParticipants, 30);
+    const patched = await (await request(resource, { method: 'PATCH', body: JSON.stringify({ place: 'Sousse' }) })).json();
+    assert.equal(patched.name, 'PUT updated'); assert.equal(patched.place, 'Sousse');
     const persisted = JSON.parse(fs.readFileSync(database, 'utf8'));
-    assert.equal(persisted.conferences.find(item => item.id === created.id).maxParticipants, 30);
+    assert.equal(persisted.conferences.find(item => item.id === created.id).place, 'Sousse');
     assert.equal((await request(resource, { method: 'DELETE' })).status, 200);
     assert.equal((await request(resource)).status, 404);
     assert.equal((await (await request()).json()).length, 3);

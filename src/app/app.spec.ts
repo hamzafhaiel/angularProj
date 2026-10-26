@@ -1,191 +1,61 @@
 import { TestBed } from '@angular/core/testing';
-import { App } from './app';
-import { provideRouter, Router } from '@angular/router';
-import { routes } from './app.routes';
-import { RouterTestingHarness } from '@angular/router/testing';
-import { Location } from '@angular/common';
-import { provideLocationMocks } from '@angular/common/testing';
-import { NavigationEnd, RouteConfigLoadStart } from '@angular/router';
+import { NavigationEnd, provideRouter, Router, withComponentInputBinding } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { filter, firstValueFrom } from 'rxjs';
-import { provideConferenceTestApi } from './testing/conference-api.testing';
+import { App } from './app';
+import { routes } from './app.routes';
+import { environment } from '../environments/environment';
 
-describe('App', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [App],
-      providers: [provideRouter(routes), provideLocationMocks(), ...provideConferenceTestApi()],
-    }).compileComponents();
+const URL = `${environment.apiUrl}/conferences`;
+const sample = { id: 1, name: 'Angular Conference', date: '2026-10-15', place: 'Tunis' };
+
+describe('Teacher application routing', () => {
+  let http: HttpTestingController;
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [App], providers: [provideRouter(routes, withComponentInputBinding()), provideHttpClient(), provideHttpClientTesting()] });
+    http = TestBed.inject(HttpTestingController);
   });
-
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
-
-  async function renderRoute(url: string) {
-    const fixture = TestBed.createComponent(App);
-    fixture.detectChanges();
-    await TestBed.inject(Router).navigateByUrl(url);
-    await fixture.whenStable();
-    fixture.detectChanges();
-    return fixture.nativeElement as HTMLElement;
+  afterEach(() => http.verify());
+  async function open(url: string) {
+    const fixture = TestBed.createComponent(App); fixture.detectChanges();
+    await TestBed.inject(Router).navigateByUrl(url); fixture.detectChanges();
+    return fixture;
   }
 
-  it('redirects the root to the home binding examples', async () => {
-    const page = await renderRoute('/');
+  it('redirects the empty URL to the teacher home examples', async () => {
+    const fixture = await open('/'); await fixture.whenStable(); fixture.detectChanges();
     expect(TestBed.inject(Router).url).toBe('/home');
-    expect(page.querySelector('h1')?.textContent).toContain('interpolation mohamed');
-    expect(page.querySelector('app-header')).toBeTruthy();
-    expect(page.querySelector('app-footer')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('h1').textContent).toContain('interpolation mohamed');
   });
 
-  it('renders all three reference conferences on the list route', async () => {
-    const page = await renderRoute('/list');
-    const titles = Array.from(page.querySelectorAll('.card h2'), node => node.textContent?.trim());
-    expect(titles).toEqual(['angular', 'react', 'vue']);
-  });
-
-  it('renders the fallback page for an unknown route', async () => {
-    const page = await renderRoute('/missing-page');
-    expect(page.querySelector('app-notfound')).toBeTruthy();
-    expect(page.querySelector('app-home')).toBeNull();
-  });
-
-  it('opens a conference directly and updates details when the URL id changes', async () => {
-    const harness = await RouterTestingHarness.create('/list/1');
-    expect(harness.routeNativeElement?.querySelector('h2')?.textContent).toContain('angular');
-    await harness.navigateByUrl('/list/2');
-    expect(harness.routeNativeElement?.querySelector('h2')?.textContent).toContain('react');
-    expect(harness.routeNativeElement?.textContent).toContain('sfax');
-  });
-
-  it('navigates from View details and returns to the list on close', async () => {
-    const harness = await RouterTestingHarness.create('/list');
+  it('navigates from Details to /details/:id and returns to the list', async () => {
+    const fixture = await open('/list');
+    http.expectOne(URL).flush([sample]); await fixture.whenStable(); fixture.detectChanges();
     const router = TestBed.inject(Router);
     const opened = firstValueFrom(router.events.pipe(filter(event => event instanceof NavigationEnd)));
-    harness.routeNativeElement?.querySelector<HTMLAnchorElement>('.details-link')!.click();
-    await opened;
-    harness.detectChanges();
-    expect(router.url).toBe('/list/1');
-    expect(harness.routeNativeElement?.querySelector('h2')?.textContent).toContain('angular');
-
-    const closed = firstValueFrom(router.events.pipe(filter(event => event instanceof NavigationEnd)));
-    harness.routeNativeElement?.querySelector<HTMLButtonElement>('.details-panel button')!.click();
-    await closed;
-    harness.detectChanges();
+    fixture.nativeElement.querySelector('.card button').click(); await opened; fixture.detectChanges();
+    expect(router.url).toBe('/details/1');
+    http.expectOne(`${URL}/1`).flush(sample); await fixture.whenStable(); fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('h1').textContent).toBe(sample.name);
+    const returned = firstValueFrom(router.events.pipe(filter(event => event instanceof NavigationEnd)));
+    fixture.nativeElement.querySelector('.back-link').click(); await returned; fixture.detectChanges();
+    http.expectOne(URL).flush([sample]); await fixture.whenStable(); fixture.detectChanges();
     expect(router.url).toBe('/list');
-    expect(harness.routeNativeElement?.querySelectorAll('.card').length).toBe(3);
   });
 
-  it('restores list and details using browser back and forward history', async () => {
-    const harness = await RouterTestingHarness.create('/list');
-    await harness.navigateByUrl('/list/3');
-    const router = TestBed.inject(Router);
-    const location = TestBed.inject(Location);
-    router.setUpLocationChangeListener();
-
-    const back = firstValueFrom(router.events.pipe(filter(event => event instanceof NavigationEnd)));
-    location.back();
-    await back;
-    harness.detectChanges();
-    expect(router.url).toBe('/list');
-
-    const forward = firstValueFrom(router.events.pipe(filter(event => event instanceof NavigationEnd)));
-    location.forward();
-    await forward;
-    harness.detectChanges();
-    expect(router.url).toBe('/list/3');
-    expect(harness.routeNativeElement?.querySelector('h2')?.textContent).toContain('vue');
+  it('binds a direct details URL to input.required and reacts when its ID changes', async () => {
+    const fixture = await open('/details/1');
+    http.expectOne(`${URL}/1`).flush(sample); await fixture.whenStable(); fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('h1').textContent).toBe(sample.name);
+    await TestBed.inject(Router).navigateByUrl('/details/2'); fixture.detectChanges();
+    http.expectOne(`${URL}/2`).flush({ ...sample, id: 2, name: 'Java Conference' });
+    await fixture.whenStable(); fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('h1').textContent).toBe('Java Conference');
   });
 
-  it('handles an unknown conference id with a return link', async () => {
-    const page = await renderRoute('/list/999');
-    expect(page.querySelector('h1')?.textContent).toBe('Conference not found');
-    expect(page.querySelector('app-conference-page a')?.getAttribute('href')).toBe('/list');
-  });
-
-  it.each([
-    ['/home', 'app-home', '/home'],
-    ['/list', 'app-conference-list', '/list'],
-    ['/list/1', 'app-conference-page', '/list'],
-    ['/list/new', 'app-conference-editor', '/list'],
-    ['/list/1/edit', 'app-conference-editor', '/list'],
-    ['/registration', 'app-registration', '/registration'],
-    ['/registration/1', 'app-registration', '/registration'],
-    ['/registration/1/confirmation', 'app-registration-confirmation', '/registration'],
-    ['/contact', 'app-contact', '/contact'],
-    ['/profile', 'app-profile', '/profile'],
-  ])('opens %s directly with one page and the correct active navigation link', async (url, selector, activeUrl) => {
-    const page = await renderRoute(url);
-    const routedPages = page.querySelectorAll(
-      'router-outlet ~ app-home, router-outlet ~ app-conference-list, ' +
-      'router-outlet ~ app-conference-page, router-outlet ~ app-registration, ' +
-      'router-outlet ~ app-contact, router-outlet ~ app-profile, ' +
-      'router-outlet ~ app-registration-confirmation, router-outlet ~ app-conference-editor',
-    );
-    expect(routedPages.length).toBe(1);
-    expect(routedPages[0].matches(selector)).toBe(true);
-    const activeLinks = page.querySelectorAll('nav a.active');
-    expect(activeLinks.length).toBe(1);
-    expect(activeLinks[0].getAttribute('href')).toBe(activeUrl);
-    expect(activeLinks[0].getAttribute('aria-current')).toBe('page');
-  });
-
-  it('navigates through the menu and updates the active link without replacing the app shell', async () => {
-    const fixture = TestBed.createComponent(App);
-    fixture.detectChanges();
-    const router = TestBed.inject(Router);
-    await router.navigateByUrl('/home');
-    await fixture.whenStable();
-    const page = fixture.nativeElement as HTMLElement;
-    const header = page.querySelector('app-header');
-
-    for (const url of ['/registration', '/contact', '/profile', '/list', '/home']) {
-      const completed = firstValueFrom(router.events.pipe(filter(event => event instanceof NavigationEnd)));
-      page.querySelector<HTMLAnchorElement>(`nav a[href="${url}"]`)!.click();
-      await completed;
-      await fixture.whenStable();
-      fixture.detectChanges();
-      expect(router.url).toBe(url);
-      expect(page.querySelector('nav a.active')?.getAttribute('href')).toBe(url);
-      expect(page.querySelector('app-header')).toBe(header);
-    }
-  });
-
-  it('loads feature routes only when visited and reuses them on a later visit', async () => {
-    const router = TestBed.inject(Router);
-    const loadedPaths: (string | undefined)[] = [];
-    const subscription = router.events.subscribe(event => {
-      if (event instanceof RouteConfigLoadStart) loadedPaths.push(event.route.path);
-    });
-    try {
-      const harness = await RouterTestingHarness.create('/home');
-      expect(loadedPaths).toContain('home');
-      expect(loadedPaths).not.toContain('list');
-      expect(loadedPaths).not.toContain('registration');
-      expect(loadedPaths).not.toContain('profile');
-
-      await harness.navigateByUrl('/registration/2');
-      expect(loadedPaths).toContain('registration');
-      expect(loadedPaths).not.toContain('list');
-      expect(harness.routeNativeElement?.querySelector('h2')?.textContent).toBe('react');
-
-      await harness.navigateByUrl('/list');
-      expect(loadedPaths).toContain('list');
-      const loadCount = loadedPaths.length;
-      await harness.navigateByUrl('/registration/3');
-      expect(loadedPaths.length).toBe(loadCount);
-      expect(harness.routeNativeElement?.querySelector('h2')?.textContent).toBe('vue');
-    } finally {
-      subscription.unsubscribe();
-    }
-  });
-
-  it.each(['/list/1/unknown', '/registration/1/unknown'])('uses the global fallback for unknown nested URL %s', async url => {
-    const page = await renderRoute(url);
-    expect(page.querySelector('app-notfound')).toBeTruthy();
-    expect(page.querySelector('app-registration')).toBeNull();
-    expect(page.querySelector('app-conference-page')).toBeNull();
+  it('shows the teacher fallback for an unknown path', async () => {
+    const fixture = await open('/missing'); await fixture.whenStable(); fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-notfound')).toBeTruthy();
   });
 });

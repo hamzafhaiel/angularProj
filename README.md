@@ -1,241 +1,107 @@
-# AngularProj - Conferences, Reactive Forms and HttpClient
+# AngularProj - Teacher Project with HttpClient
 
-An Angular 21 learning project implementing the four navigation prosits and
-the three Reactive Forms prosits: structured routing, dynamic conference pages,
-registration confirmation, lazy loading, and reusable validated add/edit forms.
-Course 6 adds an HttpClient API layer and JSON Server persistence.
-Built with standalone components, TypeScript, Angular Signals, and RxJS.
+This application now uses the teacher's `4SSA5-main (1).zip` as its base.
+The teacher's Home, conference cards, detail-page design, header, footer, naming,
+and routes are retained. The missing HttpClient integration is added using
+Course 6. The earlier extended application remains available in Git history
+at commit `5fd430c`.
 
-## Features
+## What changed from the teacher ZIP
 
-- Home page with interpolation, event binding, two-way binding, signals, and native control flow examples.
-- Responsive conference cards with **View details** links and direct URLs for each conference.
-- An **Add conference** page and prefilled **Edit conference** page using the same Reactive Forms component.
-- Typed `FormControl`/`FormGroup` models, field error messages, date validation, and participant capacity checks.
-- Live title/description counters, form validity, and available places derived with `toSignal()` and `computed()`.
-- A save button enabled only when valid, reset controls, and protection against duplicate submissions.
-- Navigation menu with `routerLinkActive` highlighting and accessible active-page indicators.
-- Registration selection and automatic navigation to a conference-specific confirmation page.
-- Registration status stored in `sessionStorage` and restored after refreshing in the same browser session.
-- Handling for unknown URLs, invalid conference IDs, missing registrations, and storage failures.
-- Lazy-loaded pages and feature route groups, with browser back/forward navigation preserved.
-- Typed HTTP GET, POST, PUT, PATCH, and DELETE operations through `ConferenceApi`.
-- A Signal-backed conference store with loading, error, empty-list, retry, and mutation states.
-- **Delete conference** on the list and **Add 10 places** on details to demonstrate DELETE and PATCH.
+- `services/conferance.ts` now calls JSON Server instead of returning a static array.
+- The teacher's model is typed as `{ id, name, date, place }`.
+- `provideHttpClient(withFetch())` configures HTTP in `app.config.ts`.
+- `getAll()` and `getById()` return typed Observables.
+- The list consumes GET through `toSignal()` and shows loading, errors, Retry, and an empty state.
+- Details keep `id = input.required<string>()` and `withComponentInputBinding()`.
+- An ID change cancels the previous request and loads the new conference through `switchMap`.
+- Detail fields are rendered only after a response, preventing undefined-value errors.
+- Invalid IDs, HTTP 404, network failures, and server errors have readable messages.
+- The course's POST, PUT, PATCH, and DELETE methods are exposed and tested in the service.
+  The teacher's interface still has only the list and Details screens; no extra CRUD forms were added.
 
-Registration is a local demonstration: it does not reserve a place on a server or
-create a user account. Contact and User profile are basic navigation pages;
-authentication, contact submission, payments, and administration are not implemented.
-Conferences are loaded from the JSON Server backend, not from session storage.
-The API persists them in the local `db.json` file, which is created from
-`db.seed.json` on first startup. Added and edited conferences appear throughout
-the app and remain after refreshing or restarting the API. `db.json` is ignored
-by Git so personal test data is not committed. The older `angularProj.conferences`
-session key is no longer read or automatically migrated. `src/app/conferences.ts`
-is now a test fixture. Participant counts are editable conference data; local
-registration IDs still do not represent real server reservations.
+The former add/edit forms, registration pages, local store, and lazy feature
+structure are not part of this teacher-based version. Historical coursework
+notes under `docs/` describe earlier revisions; the current implementation is
+explained in [Teacher base and HttpClient](docs/teacher-httpclient.md).
 
-## Getting started
+## Run locally
 
-Install Node.js compatible with Angular 21 and npm, then run:
+Install Node.js compatible with Angular 21 and npm, then install dependencies:
 
 ```bash
 npm ci
 ```
 
-Start the backend in one terminal:
+Terminal 1 - start the backend:
 
 ```bash
 npm run api
 ```
 
-Start Angular in a second terminal:
+Terminal 2 - start Angular:
 
 ```bash
 npm start
 ```
 
-Open [http://localhost:4200/](http://localhost:4200/).
-The development server reloads the application when source files change.
-The API runs at [http://localhost:3000/conferences](http://localhost:3000/conferences).
-If it is stopped, the application shows an API error with a Retry action.
-The backend is pinned to `json-server@0.17.4`, as in the course, to keep numeric IDs.
-It is a local teaching server, not an authenticated production API.
+Open [http://localhost:4200/list](http://localhost:4200/list).
+Do not open files from `src/app/` directly with `file://`; Angular templates
+must be compiled and served by the Angular development server.
 
 ## Routes
 
-| URL | Page or behavior |
+| URL | Screen |
 | --- | --- |
-| `/` | Redirect to `/home` |
-| `/home` | Home and Angular examples |
-| `/list` | Conference list |
-| `/list/new` | Add a conference |
-| `/list/:id/edit` | Edit a conference using a prefilled form |
-| `/list/:id` | Conference details |
-| `/registration` | Choose a conference to register for |
-| `/registration/:id` | Confirm registration for the selected conference |
-| `/registration/:id/confirmation` | Show confirmation if a registration exists |
-| `/contact` | Contact page |
-| `/profile` | Guest user profile |
-| Any unmatched URL | Not-found page |
+| `/` | Redirects to `/home` |
+| `/home` | The teacher's data-binding and signal examples |
+| `/list` | Conference cards and Details buttons |
+| `/details/:id` | Selected conference, for example `/details/1` |
+| Any other path | The teacher's not-found component |
 
-For example, open `/list/2`, select **Register for this conference**, and then
-**Confirm registration**. The app saves the registration in the browser session
-and navigates to `/registration/2/confirmation`. Opening a confirmation URL
-without registering displays **No registration found**.
+## Backend
 
-To try the forms, open `/list/new`, enter valid values, and select **Save conference**.
-The app opens the saved conference's details. Select **Edit conference** to update
-the same ID, or **Reset** to restore the form's initial values.
+JSON Server is pinned to `0.17.4`, as in the course, for numeric IDs.
+The endpoint is [http://localhost:3000/conferences](http://localhost:3000/conferences).
+The base URL is configured in `src/environments/environment.ts`.
 
-## Conference form rules
+`db.seed.json` contains the teacher's three conferences. On first startup,
+`preapi` creates `db.json` only if it does not already exist. The working database
+is Git-ignored and survives API restarts. For this local transition, the previous
+API database was backed up to `tmp/teacher-base-backup/db.previous.json` before
+applying the teacher's data. Previous session-storage entries are not used.
 
-The Reactive Forms implementation follows the supplied Course 3 examples:
-`ReactiveFormsModule`, `FormControl`, `FormGroup`, `Validators`, `[formGroup]`,
-`formControlName`, `(ngSubmit)`, and `getRawValue()`. `toSignal()` bridges
-`valueChanges` and `statusChanges`; `computed()` derives values for the template.
-The separate Signal Forms API is not used.
+If updating another existing checkout, back up an old `db.json` before replacing
+it with `db.seed.json`: the teacher uses `name`, not the previous `title` schema.
+JSON Server is a local teaching backend, not an authenticated production service.
 
-| Field | Validation |
-| --- | --- |
-| ID | Positive unique integer generated by the API on POST |
-| Title | Required, 3-100 characters |
-| Description | Required, 10-2000 characters |
-| Category | Required, 2-50 characters |
-| Place | Required, 2-120 characters |
-| Date | Valid calendar date; today or later for a new or changed date |
-| Maximum participants | Required integer from 1 to 100000 |
-| Current participants | Required integer from 0 to the maximum participants |
-
-Text consisting only of spaces is rejected; minimum lengths use trimmed text.
-An edited historical conference may keep its original date. The group validator
-enforces the relationship between current and maximum participants. Errors appear
-after a field is touched or submission is attempted. A failed save retains entered
-values, and both TypeScript submission code and the store validate data.
-These length and capacity bounds are project choices where the assignments did
-not prescribe exact limits.
-
-## Architecture
-
-```text
-src/app/
-  app.routes.ts                   # Root routes and lazy-loading entry points
-  app.config.ts                   # Application and router providers
-  header/                         # Navigation and active-link styles
-  footer/                         # Shared footer
-  home/                           # Angular binding and signal examples
-  conference.ts                   # Conference interface
-  conferences.ts                  # Sample fixture for tests
-  conference-data.ts              # Shared date and data validation
-  conference-api.ts               # Typed HttpClient methods and readable HTTP errors
-  conference-store.ts             # Writable Signal state, API loading, CRUD synchronization
-  conference-form/
-    conference-form.ts            # Reusable typed Reactive Form and derived Signals
-    conference-form.html          # Field bindings, errors, counters, and save/reset controls
-    conference-validators.ts      # Text, date, integer, and cross-field validators
-    conference-editor.ts          # Add/edit route page and save navigation
-  conference-list/
-    conference.routes.ts          # Lazy child routes: list, add, edit, and detail
-  conference-page/                # Reads the route ID and selects a conference
-  conference-details/             # Displays the conference received through input()
-  registration/
-    registration.routes.ts        # Lazy child routes: selection and confirmation
-    registration.ts               # Registration page and Router.navigate()
-    registration-confirmation.ts  # Confirmation and registration-state checks
-    registration-store.ts         # Signal-based session storage
-  contact/
-  profile/
-  notfound/
-src/environments/environment.ts   # API base URL configuration
-db.seed.json                      # Initial API data, committed to Git
-db.json                           # Local persistent API data, generated and Git-ignored
-scripts/init-api.cjs               # Creates the local database only if missing
-scripts/api-smoke.test.cjs         # Real HTTP CRUD test with an isolated database
-```
-
-`App` keeps the header and footer around one `router-outlet`. Simple pages use
-`loadComponent`; conference and registration features use `loadChildren` with
-their own route configuration files. Feature pages are downloaded on demand,
-without automatic background preloading.
-
-Dynamic pages read `ActivatedRoute.paramMap` through `toSignal()` so changing
-the URL ID updates the selected conference without manual parameter subscriptions.
-The detail component receives its data through `input()`.
-
-## HttpClient and Signals
-
-`app.config.ts` configures `provideHttpClient(withFetch())`. Components inject the
-store; `HttpClient` is injected only in the API service. The base URL comes from
-`src/environments/environment.ts`. The existing `Conference` model is retained
-instead of replacing it with the slides' illustrative `EventM` model.
-
-| Method | Endpoint | Usage |
+| HTTP method | Service method | Endpoint |
 | --- | --- | --- |
-| GET | `/conferences` | Load the list; optional `place` filter uses `HttpParams` |
-| GET | `/conferences/:id` | Read one conference through the API service |
-| POST | `/conferences` | Create without sending a client-generated ID |
-| PUT | `/conferences/:id` | Save the complete edited conference |
-| PATCH | `/conferences/:id` | Update only `maxParticipants` |
-| DELETE | `/conferences/:id` | Delete a conference |
+| GET | `getAll(place?)` | `/conferences`, optional `?place=Tunis` |
+| GET | `getById(id)` | `/conferences/:id` |
+| POST | `add(conference)` | `/conferences`, without a client-generated ID |
+| PUT | `update(conference)` | `/conferences/:id`, complete object |
+| PATCH | `patch(id, changes)` | `/conferences/:id`, changed fields only |
+| DELETE | `delete(id)` | `/conferences/:id` |
 
-The implementation uses the course's **state service with writable Signals**
-approach for editable data. Responses update the local list only after success.
-Navigation after saving waits for the response. Concurrent writes and reloads
-are coordinated so a stale GET cannot overwrite a mutation. HTTP errors expose
-readable messages for an unreachable API, 404, and other server failures.
-Requests time out after ten seconds. Runtime response checks complement TypeScript
-types; JSON Server itself does not enforce the form's business validation rules.
+Requests have a ten-second timeout. Network errors suggest starting the API;
+a missing record is distinguished from an unavailable server. `toSignal()`
+cleans up the subscription when the component is destroyed. Components do not
+inject HttpClient directly; only the teacher's service knows the backend URL.
 
-`toSignal()` remains appropriate for route/form Observables. `httpResource()` is
-the course's alternative for reactive GET requests, not a required extra layer
-on top of this editable store. It is not used for mutations.
-
-## Build and tests
+## Checks
 
 ```bash
-# Optimized production build
 npm run build
-
-# Run the Vitest suite once
 npm test -- --watch=false
-
-# Real JSON Server CRUD and persistence test (temporary database)
 npm run test:api
-
-# Watch tests during development
-npm test
 ```
 
-Production browser files are generated in `dist/anguproject/browser/`.
-The latest verification passed **83 Angular tests** and **1 real-API smoke test**.
-The Angular suite covers route access,
-active links, parameter changes, browser history, registration, session recovery,
-error handling, lazy loading, form constraints, Signals, add/edit integration,
-duplicate-save protection, typed HTTP requests, CRUD state updates, and backend
-failures. HTTP unit tests use `provideHttpClientTesting()` and
-`HttpTestingController`; route/component tests use an isolated in-memory HTTP
-transport. No automated browser end-to-end suite is configured. The separate
-API test starts a real JSON Server on an ephemeral port and never modifies your
-local `db.json`.
+The Angular tests cover HTTP verbs, payloads, error statuses, loading/empty/retry
+states, parameter-to-input binding, changed IDs, cancellation, Details navigation,
+and the teacher's remaining components. The real API smoke test uses a temporary
+database and never alters your local `db.json`.
 
-The forms remain lazy-loaded. The latest production build's initial JavaScript
-is about 261 kB raw; the editor, Reactive Forms dependencies, and other pages are
-split into deferred chunks.
-
-## Deployment
-
-Serve the production browser directory with an SPA fallback: application URLs
-such as `/list/2` must return `index.html` so direct links and refreshes work.
-Keep the generated JavaScript chunks available alongside the application.
-Images on the home, conference, and not-found pages use external URLs.
-Deploy a suitable API separately and change the API base URL for that environment;
-`localhost:3000` addresses the visitor's machine and is only suitable for local work.
-
-## Prosit notes
-
-- [Prosit 1 - Why navigation is needed](docs/prosit1-navigation.md)
-- [Prosit 2 - Page organization and active navigation](docs/prosit2-navigation.md)
-- [Prosit 3 - Dynamic navigation and registration confirmation](docs/prosit3-navigation.md)
-- [Prosit 4 - Child routes and lazy loading](docs/prosit4-lazy-loading.md)
-- [Reactive Forms Prosits 1-3 - Requirements, course methods, and chosen validation rules](docs/reactive-forms-prosits.md)
-- [Course 6 - HttpClient, JSON Server and Signals](docs/httpclient-signals.md)
+Build output is in `dist/anguproject/browser/`. A deployed SPA needs an
+`index.html` fallback for direct application URLs and a separately configured
+backend; `localhost:3000` is only the local development API.

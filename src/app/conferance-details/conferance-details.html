@@ -1,0 +1,26 @@
+@if (state().status === 'loading') {
+  <p role="status">Loading conference...</p>
+} @else if (state().error; as error) {
+  <h1>{{ notFound() ? 'Conference not found' : 'Unable to load conference' }}</h1>
+  <p role="alert">{{ error.message }}</p>
+  @if (!notFound()) { <button type="button" (click)="retry()">Retry</button> }
+  <p><a routerLink="/list" class="back-link">Back to conferences</a></p>
+} @else if (conference(); as conference) {
+  <div class="card">
+    <div class="card-header">
+      <span class="badge">CONFERENCE</span>
+      <h1>{{ conference.name }}</h1>
+    </div>
+    <div class="card-body">
+      <div class="info">
+        <span class="icon">📅</span>
+        <div><span class="label">Date</span><p>{{ conference.date }}</p></div>
+      </div>
+      <div class="info">
+        <span class="icon">📍</span>
+        <div><span class="label">Place</span><p>{{ conference.place }}</p></div>
+      </div>
+      <button type="button" (click)="goBack()" class="back-link">← Back to conferences</button>
+    </div>
+  </div>
+}

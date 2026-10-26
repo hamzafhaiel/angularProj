@@ -51,11 +51,7 @@ h1 {
   margin: 10px 0;
 }
 
-.card .details-link {
-  display: block;
-  box-sizing: border-box;
-  text-align: center;
-  text-decoration: none;
+.card button {
   margin-top: 15px;
   width: 100%;
   padding: 12px;
@@ -73,12 +69,6 @@ h1 {
   transition: background 0.3s;
 }
 
-.card .details-link:hover {
+.card button:hover {
   background: #4f46e5;
-}
-
-@media (max-width: 760px) {
-  .cards-container {
-    grid-template-columns: 1fr;
-  }
 }
