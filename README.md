@@ -17,14 +17,15 @@ at commit `5fd430c`.
 - An ID change cancels the previous request and loads the new conference through `switchMap`.
 - Detail fields are rendered only after a response, preventing undefined-value errors.
 - Invalid IDs, HTTP 404, network failures, and server errors have readable messages.
+- **Ajouter une conférence** opens `/add` and consumes `add()` with HTTP POST, then opens the server-created ID's details.
 - **Modifier** opens a prefilled form in Details and consumes `update()` with HTTP PUT.
 - **Supprimer** on each list card consumes `delete()` with HTTP DELETE.
 - Both actions refresh their data only after success, prevent duplicate requests, and display errors.
-- POST and PATCH remain available and tested in the service; they have no extra interface controls.
+- PATCH remains available and tested in the service; it has no extra interface control.
 
-The former full add/edit system, registration pages, local store, and lazy feature
-structure are not part of this teacher-based version. The modification form is
-limited to the teacher's `name`, `date`, and `place` fields. Historical coursework
+The former extended registration pages, local store, and lazy feature structure
+are not part of this version. The new add form and inline modification form are
+limited to the original `name`, `date`, and `place` fields. Historical coursework
 notes under `docs/` describe earlier revisions; the current implementation is
 explained in [Teacher base and HttpClient](docs/teacher-httpclient.md).
 
@@ -59,10 +60,19 @@ must be compiled and served by the Angular development server.
 | `/` | Redirects to `/home` |
 | `/home` | The teacher's data-binding and signal examples |
 | `/list` | Conference cards, Details and Supprimer buttons |
+| `/add` | Add a conference through HTTP POST |
 | `/details/:id` | Selected conference and inline modification form |
 | Any other path | The teacher's not-found component |
 
-## Consume update and delete
+## Consume add, update and delete
+
+From the list, select **Ajouter une conférence**, fill in the name, date and place,
+then click **Ajouter**. `ConferanceAdd` builds a validated Reactive Form with
+`FormBuilder`, retrieves its values with `getRawValue()`, and consumes `add()`.
+No ID is sent in the POST body: JSON Server generates it. Navigation to
+`/details/:id` waits for the successful response. A failed POST retains entered
+values and shows an error. Duplicate clicks are blocked. If creation succeeded
+but navigation failed, **Voir la conférence** retries navigation without another POST.
 
 Open a conference's Details, click **Modifier**, edit its name, date or place,
 and click **Enregistrer**. The form is created with `FormBuilder` and
@@ -118,9 +128,9 @@ npm test -- --watch=false
 npm run test:api
 ```
 
-The latest check passed **31 Angular tests**. The tests cover HTTP verbs, payloads, error statuses, loading/empty/retry
+The latest check passed **40 Angular tests**. The tests cover HTTP verbs, payloads, error statuses, loading/empty/retry
 states, parameter-to-input binding, changed IDs, cancellation, Details navigation,
-update/delete consumption, form validation, failure recovery, duplicate-request
+add/update/delete consumption, form validation, failure recovery, duplicate-request
 prevention, and the teacher's remaining components. The real API smoke test uses a temporary
 database and never alters your local `db.json`.
 

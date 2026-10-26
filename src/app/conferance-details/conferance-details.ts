@@ -1,22 +1,12 @@
 import { Component, DestroyRef, computed, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { FormBuilder, ReactiveFormsModule, Validators, type ValidatorFn } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { combineLatest, finalize, of, switchMap } from 'rxjs';
 import { Conferance, ConferenceHttpError } from '../services/conferance';
 import type { Conference } from '../services/conference.model';
 import { loadingState, requestState, type RequestState } from '../services/request-state';
-
-const calendarDate: ValidatorFn = control => {
-  if (!control.value) return null;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(control.value)) return { date: true };
-  const [year, month, day] = String(control.value).split('-').map(Number);
-  const date = new Date(0);
-  date.setFullYear(year, month - 1, day);
-  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? null : { date: true };
-};
-
-const trimmedRequired: ValidatorFn = control => String(control.value ?? '').trim() ? null : { required: true };
+import { calendarDate, trimmedRequired } from '../services/conference-validators';
 
 @Component({
   selector: 'app-conferance-details',

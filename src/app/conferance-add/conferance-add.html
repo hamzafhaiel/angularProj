@@ -1,0 +1,27 @@
+<section class="add-card">
+  <h1>Ajouter une conférence</h1>
+  <form [formGroup]="form" (ngSubmit)="ajouter()" novalidate>
+    <fieldset [disabled]="saving() || createdId() !== null">
+      <label for="add-name">Nom</label>
+      <input id="add-name" formControlName="name" required aria-describedby="name-error" />
+      <div id="name-error" class="error">
+        @if (form.controls.name.touched && form.controls.name.invalid) { <p>Le nom est obligatoire (100 caractères maximum, pas uniquement des espaces).</p> }
+      </div>
+      <label for="add-date">Date</label>
+      <input id="add-date" type="date" formControlName="date" required aria-describedby="date-error" />
+      <div id="date-error" class="error">
+        @if (form.controls.date.touched && form.controls.date.invalid) { <p>Une date valide est obligatoire.</p> }
+      </div>
+      <label for="add-place">Lieu</label>
+      <input id="add-place" formControlName="place" required aria-describedby="place-error" />
+      <div id="place-error" class="error">
+        @if (form.controls.place.touched && form.controls.place.invalid) { <p>Le lieu est obligatoire (120 caractères maximum, pas uniquement des espaces).</p> }
+      </div>
+    </fieldset>
+    @if (error()) { <p role="alert" class="error">{{ error() }}</p> }
+    <div class="actions">
+      <button type="submit" [disabled]="!canSave()">{{ saving() ? 'Enregistrement...' : createdId() !== null ? 'Voir la conférence' : 'Ajouter' }}</button>
+      <a routerLink="/list">Retour à la liste</a>
+    </div>
+  </form>
+</section>

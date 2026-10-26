@@ -19,7 +19,8 @@ Le projet garde son nom local `angularProj` et ses dépendances Angular install�
 La liste statique du service devient une ressource JSON Server `/conferences`.
 `getAll()` retourne `Observable<Conference[]>`, et `getById()` retourne
 `Observable<Conference>`. Les méthodes POST, PUT, PATCH et DELETE du cours sont
-également disponibles dans ce service sans ajouter de nouvelles pages.
+également disponibles dans ce service. Les composants consomment maintenant
+GET, POST, PUT et DELETE ; PATCH reste exposé au niveau du service.
 
 `provideHttpClient(withFetch())` est ajouté aux providers. Le service centralise
 les URLs, lit `environment.apiUrl`, utilise `HttpParams` pour un filtre de lieu
@@ -43,6 +44,12 @@ conférence introuvable ; une erreur réseau affiche une erreur de chargement et
 
 ## Limites du périmètre
 
+La nouvelle route `/add` propose un formulaire d'ajout avec `FormBuilder` et
+les mêmes validateurs que la modification. `ajouter()` consomme `add()` par POST,
+sans envoyer d'ID. Après la réponse du serveur, la navigation ouvre
+`/details/:id` avec l'identifiant généré. Une erreur conserve les valeurs saisies,
+et une navigation échouée après création peut être relancée sans second POST.
+
 L'interface conserve les écrans de l'enseignant. Un formulaire de modification
 est maintenant intégré à la page de détail et un bouton Supprimer à chaque carte
 pour compléter la consommation de `update()` et `delete()`. Le formulaire utilise
@@ -55,8 +62,8 @@ est rechargée. Les erreurs restent visibles sans effacer les champs saisis ou
 retirer prématurément une carte. Les doubles soumissions sont bloquées ;
 `takeUntilDestroyed()` nettoie les abonnements et `finalize()` rétablit les états.
 
-Les pages d'ajout complètes, inscriptions et patchs de capacité de la version
-étendue ne sont pas repris. Ils restent consultables dans l'historique Git au commit `5fd430c`.
+Les inscriptions et patchs de capacité de la version étendue ne sont pas repris.
+Ils restent consultables dans l'historique Git au commit `5fd430c`.
 Les anciens documents de prosits sont des références historiques et ne décrivent
 pas tous le code actif de cette base.
 

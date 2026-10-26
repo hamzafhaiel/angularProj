@@ -58,4 +58,26 @@ describe('Teacher application routing', () => {
     const fixture = await open('/missing'); await fixture.whenStable(); fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-notfound')).toBeTruthy();
   });
+
+  it('opens the add form from the list and displays the server-created conference after POST', async () => {
+    const fixture = await open('/list');
+    http.expectOne(URL).flush([sample]); await fixture.whenStable(); fixture.detectChanges();
+    const router = TestBed.inject(Router);
+    const opened = firstValueFrom(router.events.pipe(filter(event => event instanceof NavigationEnd)));
+    fixture.nativeElement.querySelector('.add-link').click(); await opened; fixture.detectChanges();
+    expect(router.url).toBe('/add');
+    for (const [id, value] of Object.entries({ 'add-name': 'New Angular Conference', 'add-date': '2099-06-15', 'add-place': 'Sousse' })) {
+      const input = fixture.nativeElement.querySelector(`#${id}`);
+      input.value = value; input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    fixture.detectChanges();
+    const navigated = firstValueFrom(router.events.pipe(filter(event => event instanceof NavigationEnd)));
+    fixture.nativeElement.querySelector('button[type="submit"]').click();
+    const created = { id: 77, name: 'New Angular Conference', date: '2099-06-15', place: 'Sousse' };
+    const post = http.expectOne(URL); expect(post.request.method).toBe('POST'); post.flush(created);
+    await navigated; fixture.detectChanges();
+    expect(router.url).toBe('/details/77');
+    http.expectOne(`${URL}/77`).flush(created); await fixture.whenStable(); fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('h1').textContent).toBe(created.name);
+  });
 });
