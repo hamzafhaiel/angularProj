@@ -39,7 +39,7 @@ describe('Teacher application routing', () => {
     http.expectOne(`${URL}/1`).flush(sample); await fixture.whenStable(); fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('h1').textContent).toBe(sample.name);
     const returned = firstValueFrom(router.events.pipe(filter(event => event instanceof NavigationEnd)));
-    fixture.nativeElement.querySelector('.back-link').click(); await returned; fixture.detectChanges();
+    fixture.nativeElement.querySelector('.return-button').click(); await returned; fixture.detectChanges();
     http.expectOne(URL).flush([sample]); await fixture.whenStable(); fixture.detectChanges();
     expect(router.url).toBe('/list');
   });

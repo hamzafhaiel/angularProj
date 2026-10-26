@@ -43,9 +43,20 @@ conférence introuvable ; une erreur réseau affiche une erreur de chargement et
 
 ## Limites du périmètre
 
-L'interface conserve les écrans de l'enseignant. Les formulaires, inscriptions,
-patchs de capacité et boutons de suppression de la version étendue ne sont plus
-présents. Ils restent consultables dans l'historique Git au commit `5fd430c`.
+L'interface conserve les écrans de l'enseignant. Un formulaire de modification
+est maintenant intégré à la page de détail et un bouton Supprimer à chaque carte
+pour compléter la consommation de `update()` et `delete()`. Le formulaire utilise
+`FormBuilder`, `ReactiveFormsModule`, les champs `name`, `date`, `place` et des
+validateurs. L'ID vient de la conférence chargée et n'est pas modifiable.
+
+`enregistrer()` s'abonne à `update()` : après succès du PUT, le composant recharge
+le détail. `supprimer(id)` s'abonne à `delete()` : après succès du DELETE, la liste
+est rechargée. Les erreurs restent visibles sans effacer les champs saisis ou
+retirer prématurément une carte. Les doubles soumissions sont bloquées ;
+`takeUntilDestroyed()` nettoie les abonnements et `finalize()` rétablit les états.
+
+Les pages d'ajout complètes, inscriptions et patchs de capacité de la version
+étendue ne sont pas repris. Ils restent consultables dans l'historique Git au commit `5fd430c`.
 Les anciens documents de prosits sont des références historiques et ne décrivent
 pas tous le code actif de cette base.
 

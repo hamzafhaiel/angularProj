@@ -1,4 +1,6 @@
 <h1>Conferences</h1>
+@if (deleteError()) { <p role="alert">{{ deleteError() }}</p> }
+@if (message()) { <p role="status">{{ message() }}</p> }
 
 @if (state().status === 'loading') { <p role="status">Loading conferences...</p> }
 @else if (state().error; as error) {
@@ -23,6 +25,10 @@
 
       </div>
       <button type="button" [routerLink]="['/details', conf.id]">Details</button>
+      <button type="button" class="delete-button" [disabled]="deletingId() !== null"
+        [attr.aria-label]="'Supprimer ' + conf.name" (click)="supprimer(conf.id)">
+        {{ deletingId() === conf.id ? 'Suppression...' : 'Supprimer' }}
+      </button>
     </div>
   } @empty { <p>No conferences available.</p> }
 </div>

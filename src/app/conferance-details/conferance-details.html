@@ -20,7 +20,36 @@
         <span class="icon">📍</span>
         <div><span class="label">Place</span><p>{{ conference.place }}</p></div>
       </div>
-      <button type="button" (click)="goBack()" class="back-link">← Back to conferences</button>
+      @if (editing()) {
+        <form [formGroup]="editForm" (ngSubmit)="enregistrer()" class="edit-form" novalidate>
+          <fieldset [disabled]="saving()">
+          <h2>Modifier la conférence</h2>
+          <label for="edit-name">Nom</label>
+          <input id="edit-name" formControlName="name" required aria-describedby="name-error" />
+          <div id="name-error" class="error">
+            @if (editForm.controls.name.touched && editForm.controls.name.invalid) { <p>Le nom est obligatoire (100 caractères maximum, pas uniquement des espaces).</p> }
+          </div>
+          <label for="edit-date">Date</label>
+          <input id="edit-date" type="date" formControlName="date" required aria-describedby="date-error" />
+          <div id="date-error" class="error">
+            @if (editForm.controls.date.touched && editForm.controls.date.invalid) { <p>Une date valide est obligatoire.</p> }
+          </div>
+          <label for="edit-place">Lieu</label>
+          <input id="edit-place" formControlName="place" required aria-describedby="place-error" />
+          <div id="place-error" class="error">
+            @if (editForm.controls.place.touched && editForm.controls.place.invalid) { <p>Le lieu est obligatoire (120 caractères maximum, pas uniquement des espaces).</p> }
+          </div>
+          @if (updateError()) { <p role="alert" class="error">{{ updateError() }}</p> }
+          <div class="edit-actions">
+            <button type="submit" class="back-link" [disabled]="!canSave()">{{ saving() ? 'Enregistrement...' : 'Enregistrer' }}</button>
+            <button type="button" class="back-link secondary" [disabled]="saving()" (click)="annuler()">Annuler</button>
+          </div>
+          </fieldset>
+        </form>
+      } @else {
+        <button type="button" class="back-link" [disabled]="saving()" (click)="modifier()">Modifier</button>
+      }
+      <button type="button" (click)="goBack()" class="back-link return-button">← Back to conferences</button>
     </div>
   </div>
 }

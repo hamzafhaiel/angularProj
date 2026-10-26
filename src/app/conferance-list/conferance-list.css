@@ -72,3 +72,7 @@ h1 {
 .card button:hover {
   background: #4f46e5;
 }
+
+.card .delete-button { background: #b42318; }
+.card .delete-button:hover { background: #8f1c13; }
+.card button:disabled { opacity: .6; cursor: not-allowed; }

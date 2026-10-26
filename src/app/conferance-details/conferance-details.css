@@ -77,3 +77,15 @@
   background: #1d4ed8;
   transform: translateY(-2px);
 }
+
+.back-link + .back-link { margin-left: 12px; }
+.back-link:disabled { opacity: .6; cursor: not-allowed; }
+.edit-form { display: grid; gap: 8px; margin-top: 24px; }
+.edit-form fieldset { display: grid; gap: 8px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.edit-form h2 { margin: 0 0 8px; }
+.edit-form input { box-sizing: border-box; width: 100%; padding: 10px; border: 1px solid #94a3b8; border-radius: 6px; font: inherit; }
+.edit-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.edit-actions .back-link { margin: 8px 0; }
+.error { color: #b42318; }
+.error p { margin: 0; }
+.secondary { background: #475569; }

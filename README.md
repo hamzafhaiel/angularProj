@@ -17,11 +17,14 @@ at commit `5fd430c`.
 - An ID change cancels the previous request and loads the new conference through `switchMap`.
 - Detail fields are rendered only after a response, preventing undefined-value errors.
 - Invalid IDs, HTTP 404, network failures, and server errors have readable messages.
-- The course's POST, PUT, PATCH, and DELETE methods are exposed and tested in the service.
-  The teacher's interface still has only the list and Details screens; no extra CRUD forms were added.
+- **Modifier** opens a prefilled form in Details and consumes `update()` with HTTP PUT.
+- **Supprimer** on each list card consumes `delete()` with HTTP DELETE.
+- Both actions refresh their data only after success, prevent duplicate requests, and display errors.
+- POST and PATCH remain available and tested in the service; they have no extra interface controls.
 
-The former add/edit forms, registration pages, local store, and lazy feature
-structure are not part of this teacher-based version. Historical coursework
+The former full add/edit system, registration pages, local store, and lazy feature
+structure are not part of this teacher-based version. The modification form is
+limited to the teacher's `name`, `date`, and `place` fields. Historical coursework
 notes under `docs/` describe earlier revisions; the current implementation is
 explained in [Teacher base and HttpClient](docs/teacher-httpclient.md).
 
@@ -55,9 +58,27 @@ must be compiled and served by the Angular development server.
 | --- | --- |
 | `/` | Redirects to `/home` |
 | `/home` | The teacher's data-binding and signal examples |
-| `/list` | Conference cards and Details buttons |
-| `/details/:id` | Selected conference, for example `/details/1` |
+| `/list` | Conference cards, Details and Supprimer buttons |
+| `/details/:id` | Selected conference and inline modification form |
 | Any other path | The teacher's not-found component |
+
+## Consume update and delete
+
+Open a conference's Details, click **Modifier**, edit its name, date or place,
+and click **Enregistrer**. The form is created with `FormBuilder` and
+`ReactiveFormsModule`; it validates required nonblank name/place, maximum text
+lengths, and a valid date. Existing past dates are allowed. `Annuler` closes the
+form without sending a request. The conference ID is preserved in the full PUT.
+
+The detail component consumes `update()` with `subscribe()`, waits for success,
+and reloads the updated details. Failed saves retain the input values for retry.
+The form and submit controls are disabled during saving.
+
+On the list, **Supprimer** calls the component's `supprimer(id)`, which consumes
+`delete(id)` with `subscribe()`. A successful DELETE reloads the list and shows a
+confirmation message. A failed request leaves the card visible with an error.
+Only one delete is allowed at a time. Mutation subscriptions use
+`takeUntilDestroyed()` and `finalize()` for cleanup and busy-state reset.
 
 ## Backend
 
@@ -97,9 +118,10 @@ npm test -- --watch=false
 npm run test:api
 ```
 
-The Angular tests cover HTTP verbs, payloads, error statuses, loading/empty/retry
+The latest check passed **31 Angular tests**. The tests cover HTTP verbs, payloads, error statuses, loading/empty/retry
 states, parameter-to-input binding, changed IDs, cancellation, Details navigation,
-and the teacher's remaining components. The real API smoke test uses a temporary
+update/delete consumption, form validation, failure recovery, duplicate-request
+prevention, and the teacher's remaining components. The real API smoke test uses a temporary
 database and never alters your local `db.json`.
 
 Build output is in `dist/anguproject/browser/`. A deployed SPA needs an

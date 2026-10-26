@@ -48,4 +48,36 @@ describe('Teacher conference list over HTTP', () => {
     const request = http.expectOne(URL); fixture.destroy();
     expect(request.cancelled).toBe(true);
   });
+
+  it('consumes DELETE once and refreshes the list only after success', async () => {
+    const fixture = TestBed.createComponent(ConferanceList); fixture.detectChanges();
+    http.expectOne(URL).flush([sample]); await fixture.whenStable(); fixture.detectChanges();
+    fixture.nativeElement.querySelector('.delete-button').click(); fixture.detectChanges();
+    const deletion = http.expectOne(`${URL}/1`);
+    expect(deletion.request.method).toBe('DELETE');
+    expect(fixture.componentInstance.conferances()).toEqual([sample]);
+    expect(fixture.nativeElement.querySelector('.delete-button').disabled).toBe(true);
+    fixture.componentInstance.supprimer(1);
+    http.expectNone(`${URL}/1`);
+    deletion.flush({}); fixture.detectChanges();
+    http.expectOne(URL).flush([]); await fixture.whenStable(); fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Conference deleted');
+    expect(fixture.nativeElement.textContent).toContain('No conferences available');
+    expect(fixture.nativeElement.querySelector('.card')).toBeNull();
+  });
+
+  it('keeps a conference visible after a failed DELETE and supports another attempt', async () => {
+    const fixture = TestBed.createComponent(ConferanceList); fixture.detectChanges();
+    http.expectOne(URL).flush([sample]); await fixture.whenStable(); fixture.detectChanges();
+    fixture.componentInstance.supprimer(1);
+    http.expectOne(`${URL}/1`).flush({}, { status: 500, statusText: 'Failure' });
+    await fixture.whenStable(); fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('500');
+    expect(fixture.nativeElement.querySelector('h2').textContent).toBe(sample.name);
+    expect(fixture.componentInstance.deletingId()).toBeNull();
+    fixture.componentInstance.supprimer(1);
+    http.expectOne(`${URL}/1`).flush({}); fixture.detectChanges();
+    http.expectOne(URL).flush([]); await fixture.whenStable(); fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+  });
 });

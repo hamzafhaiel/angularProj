@@ -64,4 +64,64 @@ describe('Teacher conference details with route input and HTTP', () => {
     http.expectOne(`${URL}/1`).flush(first); await fixture.whenStable(); fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('h1').textContent).toBe(first.name);
   });
+
+  it('prefills the edit form and consumes a complete PUT before refreshing details', async () => {
+    const fixture = TestBed.createComponent(ConferanceDetails);
+    fixture.componentRef.setInput('id', '1'); fixture.detectChanges();
+    http.expectOne(`${URL}/1`).flush(first); await fixture.whenStable(); fixture.detectChanges();
+    const component = fixture.componentInstance;
+    component.modifier(); fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('#edit-name').value).toBe(first.name);
+    const input = fixture.nativeElement.querySelector('#edit-name');
+    input.value = 'Angular Updated'; input.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+    fixture.nativeElement.querySelector('button[type="submit"]').click(); fixture.detectChanges();
+    const put = http.expectOne(`${URL}/1`);
+    expect(put.request.method).toBe('PUT');
+    expect(put.request.body).toEqual({ ...first, name: 'Angular Updated' });
+    expect(component.saving()).toBe(true);
+    component.enregistrer(); http.expectNone(`${URL}/1`);
+    put.flush({ ...first, name: 'Angular Updated' }); fixture.detectChanges();
+    http.expectOne(`${URL}/1`).flush({ ...first, name: 'Angular Updated' });
+    await fixture.whenStable(); fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('h1').textContent).toBe('Angular Updated');
+    expect(fixture.nativeElement.querySelector('form')).toBeNull();
+  });
+
+  it('blocks invalid form values and lets the user cancel without a PUT', async () => {
+    const fixture = TestBed.createComponent(ConferanceDetails);
+    fixture.componentRef.setInput('id', '1'); fixture.detectChanges();
+    http.expectOne(`${URL}/1`).flush(first); await fixture.whenStable(); fixture.detectChanges();
+    const component = fixture.componentInstance;
+    component.modifier(); component.editForm.controls.name.setValue('   ');
+    component.enregistrer(); fixture.detectChanges();
+    http.expectNone(() => true);
+    expect(fixture.nativeElement.textContent).toContain('Le nom est obligatoire');
+    expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(true);
+    component.editForm.controls.name.setValue(first.name);
+    component.editForm.controls.date.setValue('2026-02-30');
+    component.enregistrer(); expect(component.editForm.controls.date.hasError('date')).toBe(true);
+    component.annuler(); fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('form')).toBeNull();
+    expect(component.conference()).toEqual(first);
+  });
+
+  it('keeps entered values after a failed PUT and retries successfully', async () => {
+    const fixture = TestBed.createComponent(ConferanceDetails);
+    fixture.componentRef.setInput('id', '1'); fixture.detectChanges();
+    http.expectOne(`${URL}/1`).flush(first); await fixture.whenStable(); fixture.detectChanges();
+    const component = fixture.componentInstance;
+    component.modifier(); component.editForm.controls.place.setValue('Sousse'); component.enregistrer();
+    http.expectOne(`${URL}/1`).flush({}, { status: 500, statusText: 'Failure' });
+    await fixture.whenStable(); fixture.detectChanges();
+    expect(component.editing()).toBe(true);
+    expect(component.saving()).toBe(false);
+    expect(fixture.nativeElement.querySelector('#edit-place').value).toBe('Sousse');
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('500');
+    component.enregistrer();
+    http.expectOne(`${URL}/1`).flush({ ...first, place: 'Sousse' }); fixture.detectChanges();
+    http.expectOne(`${URL}/1`).flush({ ...first, place: 'Sousse' });
+    await fixture.whenStable(); fixture.detectChanges();
+    expect(component.conference()?.place).toBe('Sousse');
+  });
 });
