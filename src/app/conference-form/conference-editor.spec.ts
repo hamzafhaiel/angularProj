@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { ApplicationRef } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { NavigationEnd, provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { filter, firstValueFrom } from 'rxjs';
@@ -6,11 +8,12 @@ import { routes } from '../app.routes';
 import { ConferenceStore } from '../conference-store';
 import { RegistrationStore } from '../registration/registration-store';
 import { ConferenceEditor } from './conference-editor';
+import { MemoryConferenceBackend, provideConferenceTestApi } from '../testing/conference-api.testing';
 
 describe('Conference form navigation', () => {
   beforeEach(() => {
     sessionStorage.removeItem('angularProj.conferences');
-    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+    TestBed.configureTestingModule({ providers: [provideRouter(routes), ...provideConferenceTestApi()] });
   });
   afterEach(() => { vi.restoreAllMocks(); sessionStorage.removeItem('angularProj.conferences'); sessionStorage.removeItem('angularProj.registeredConferences'); });
 
@@ -66,15 +69,16 @@ describe('Conference form navigation', () => {
     expect(harness.routeNativeElement?.querySelector('form')).toBeNull();
   });
 
-  it('shows storage errors and keeps entered values for retry', async () => {
+  it('shows API errors and keeps entered values for retry', async () => {
     const harness = await RouterTestingHarness.create('/list/new');
     fill(harness.routeNativeElement!);
     harness.detectChanges();
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('Unavailable'); });
+    TestBed.inject(MemoryConferenceBackend).failNext = new HttpErrorResponse({ status: 500 });
     harness.routeNativeElement!.querySelector<HTMLButtonElement>('button[type="submit"]')!.click();
+    await TestBed.inject(ApplicationRef).whenStable();
     harness.detectChanges();
     expect(TestBed.inject(Router).url).toBe('/list/new');
-    expect(harness.routeNativeElement?.querySelector('[role="alert"]')?.textContent).toContain('Unable to save the conference');
+    expect(harness.routeNativeElement?.querySelector('[role="alert"]')?.textContent).toContain('API request failed');
     expect(harness.routeNativeElement!.querySelector<HTMLInputElement>('#title')!.value).toBe('Signals workshop');
   });
 
@@ -83,16 +87,18 @@ describe('Conference form navigation', () => {
     const editor = harness.routeDebugElement!.componentInstance as ConferenceEditor;
     const draft = { title: 'Signals workshop', description: 'A complete workshop on Angular reactive forms.', category: 'Workshop', place: 'Tunis', date: '2099-05-10', maxParticipants: 40, nbParticipants: 2 };
     let finish!: (value: boolean) => void;
-    vi.spyOn(TestBed.inject(Router), 'navigate').mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate')
+      .mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }))
+      .mockResolvedValue(false);
     const pending = editor.save(draft);
     await editor.save(draft);
+    await vi.waitFor(() => expect(navigate).toHaveBeenCalledTimes(1));
     expect(TestBed.inject(ConferenceStore).conferences().length).toBe(4);
     expect(editor.saving()).toBe(true);
     finish(false);
     await pending;
     expect(editor.error()).toContain('Conference saved');
     const retry = editor.save(draft);
-    finish(false);
     await retry;
     expect(TestBed.inject(ConferenceStore).conferences().length).toBe(4);
     expect(editor.saving()).toBe(false);

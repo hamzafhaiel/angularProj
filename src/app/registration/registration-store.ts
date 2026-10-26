@@ -28,7 +28,7 @@ export class RegistrationStore {
     try {
       const stored: unknown = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? '[]');
       return Array.isArray(stored)
-        ? this.conferences.conferences().filter(conference => stored.includes(conference.id)).map(conference => conference.id)
+        ? [...new Set(stored.filter((id): id is number => typeof id === 'number' && Number.isSafeInteger(id) && id > 0))]
         : [];
     } catch {
       return [];

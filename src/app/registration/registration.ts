@@ -11,7 +11,9 @@ import { RegistrationStore } from './registration-store';
   template: `
     <section aria-labelledby="registration-title">
       <h1 id="registration-title">Registration</h1>
-      @if (selection(); as selected) {
+      @if (store.loading()) { <p role="status">Loading conferences...</p> }
+      @else if (store.error()) { <p role="alert">{{ store.error() }}</p><button type="button" (click)="store.load()">Retry</button> }
+      @else if (selection(); as selected) {
         @if (selected.conference; as conference) {
           <h2>{{ conference.title }}</h2>
           <p>{{ conference.date }} · {{ conference.place }}</p>
@@ -40,7 +42,7 @@ import { RegistrationStore } from './registration-store';
 export class Registration {
   private readonly router = inject(Router);
   protected readonly registrations = inject(RegistrationStore);
-  private readonly store = inject(ConferenceStore);
+  protected readonly store = inject(ConferenceStore);
   protected readonly conferences = this.store.conferences;
   protected readonly error = signal('');
   private readonly id = toSignal(inject(ActivatedRoute).paramMap.pipe(map(params => params.get('id'))), { initialValue: null });

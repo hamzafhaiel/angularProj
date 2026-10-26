@@ -4,6 +4,9 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "preapi": "node scripts/init-api.cjs",
+    "api": "json-server --watch db.json --host 127.0.0.1 --port 3000",
+    "test:api": "node --test scripts/api-smoke.test.cjs",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -25,6 +28,7 @@
     "@angular/cli": "^21.2.24",
     "@angular/compiler-cli": "^21.2.0",
     "jsdom": "^28.0.0",
+    "json-server": "0.17.4",
     "prettier": "^3.8.1",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"

@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ConferenceList } from './conference-list';
 import { provideRouter } from '@angular/router';
+import { provideConferenceTestApi } from '../testing/conference-api.testing';
 
 describe('ConferenceList', () => {
   let component: ConferenceList;
@@ -10,7 +11,7 @@ describe('ConferenceList', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ConferenceList],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), ...provideConferenceTestApi()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ConferenceList);

@@ -1,7 +1,14 @@
-<h1>Conferences</h1>
+<h1>Conferences ({{ store.count() }})</h1>
 <p style="text-align: center;"><a routerLink="/list/new">Add conference</a></p>
+<p style="text-align: center;"><button type="button" [disabled]="store.loading() || store.mutating()" (click)="store.load()">Reload conferences</button></p>
 
-<div class="cards-container">
+@if (store.loading()) { <p role="status">Loading conferences...</p> }
+@else if (store.error()) {
+  <p role="alert">{{ store.error() }}</p><button type="button" (click)="store.load()">Retry</button>
+}
+@else if (conferences().length === 0) { <p>No conferences yet. Add the first conference.</p> }
+@else {
+<div class="cards-container" [attr.aria-busy]="store.mutating()">
   @for (conf of conferences(); track conf.id) {
     <div class="card">
 
@@ -18,9 +25,11 @@
         <a class="details-link" [routerLink]="['/list', conf.id]"
           [attr.aria-label]="'View details for ' + conf.title"
           >View details</a>
+        <p><button type="button" [disabled]="store.mutating()" (click)="remove(conf.id)" [attr.aria-label]="'Delete ' + conf.title">Delete conference</button></p>
 
       </div>
 
     </div>
   }
 </div>
+}

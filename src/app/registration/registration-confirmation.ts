@@ -9,7 +9,9 @@ import { RegistrationStore } from './registration-store';
   selector: 'app-registration-confirmation',
   imports: [RouterLink],
   template: `
-    @if (conference(); as selected) {
+    @if (store.loading()) { <p role="status">Loading conference...</p> }
+    @else if (store.error()) { <p role="alert">{{ store.error() }}</p><button type="button" (click)="store.load()">Retry</button> }
+    @else if (conference(); as selected) {
       @if (registrations.isRegistered(selected.id)) {
         <h1>Registration confirmed</h1>
         <p role="status">Your registration for {{ selected.title }} is saved in this browser session.</p>
@@ -28,7 +30,7 @@ import { RegistrationStore } from './registration-store';
 })
 export class RegistrationConfirmation {
   protected readonly registrations = inject(RegistrationStore);
-  private readonly store = inject(ConferenceStore);
+  protected readonly store = inject(ConferenceStore);
   private readonly id = toSignal(inject(ActivatedRoute).paramMap.pipe(map(params => params.get('id'))));
   protected readonly conference = computed(() => this.store.find(this.id() ?? null));
 }

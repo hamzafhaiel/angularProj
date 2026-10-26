@@ -1,5 +1,9 @@
 # Reactive Forms et Signals
 
+> Évolution Cours 6 : la section stockage ci-dessous décrit l'étape initiale
+> des prosits. Les conférences utilisent maintenant une API HttpClient et
+> JSON Server ; voir [HttpClient et Signals](httpclient-signals.md).
+
 ## Comparaison des consignes avec le projet
 
 Les trois prosits de formulaires et le Cours n°3 complètent les quatre prosits

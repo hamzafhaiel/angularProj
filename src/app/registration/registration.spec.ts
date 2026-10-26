@@ -4,13 +4,14 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { filter, firstValueFrom } from 'rxjs';
 import { routes } from '../app.routes';
 import { RegistrationStore } from './registration-store';
+import { provideConferenceTestApi } from '../testing/conference-api.testing';
 
 const STORAGE_KEY = 'angularProj.registeredConferences';
 
 describe('Dynamic registration navigation', () => {
   beforeEach(() => {
     sessionStorage.removeItem(STORAGE_KEY);
-    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+    TestBed.configureTestingModule({ providers: [provideRouter(routes), ...provideConferenceTestApi()] });
   });
 
   afterEach(() => {

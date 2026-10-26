@@ -9,5 +9,10 @@ import { ConferenceStore } from '../conference-store';
   styleUrl: './conference-list.css',
 })
 export class ConferenceList {
-  readonly conferences = inject(ConferenceStore).conferences;
+  readonly store = inject(ConferenceStore);
+  readonly conferences = this.store.conferences;
+
+  async remove(id: number): Promise<void> {
+    try { await this.store.remove(id); } catch { /* The store exposes the error to the view. */ }
+  }
 }

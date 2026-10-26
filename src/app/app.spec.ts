@@ -7,12 +7,13 @@ import { Location } from '@angular/common';
 import { provideLocationMocks } from '@angular/common/testing';
 import { NavigationEnd, RouteConfigLoadStart } from '@angular/router';
 import { filter, firstValueFrom } from 'rxjs';
+import { provideConferenceTestApi } from './testing/conference-api.testing';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter(routes), provideLocationMocks()],
+      providers: [provideRouter(routes), provideLocationMocks(), ...provideConferenceTestApi()],
     }).compileComponents();
   });
 
